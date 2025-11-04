@@ -158,7 +158,7 @@
 
 ---
 
-## 🔧 Reverse Engineering Challenges
+## Reverse Engineering Challenges
 
 ### Extract Flag from obs.py
 
@@ -172,6 +172,7 @@
 **Flag:** `v1t{d4ng_u_kn0w_pyth0n_d3bugg}`
 
 ---
+
 
 
 
