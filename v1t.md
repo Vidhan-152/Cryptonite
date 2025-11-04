@@ -1,4 +1,4 @@
-**LINK TO :** OSINT
+**LINK TO MY PROFILE :** https://ctf.v1t.site/teams/1170
 
 **TYPE:** OSINT
 
@@ -115,4 +115,5 @@ http://chall.v1t.site:30300/
 3. Read the recovered output containing the flag.
 
 **Flag**: v1t{d4ng_u_kn0w_pyth0n_d3bugg}
+
 
