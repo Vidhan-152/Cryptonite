@@ -4,7 +4,7 @@
 
 ---
 
-## 🔍 OSINT Challenges
+## OSINT Challenges
 
 ### Among Us at School
 
@@ -65,7 +65,7 @@
 
 ---
 
-## 🌐 Web Challenges
+## Web Challenges
 
 ### Tiny Flag
 
@@ -141,7 +141,7 @@
 
 ---
 
-## 🔐 Cryptography Challenges
+## Cryptography Challenges
 
 ### Lost Some Binary
 
@@ -172,5 +172,6 @@
 **Flag:** `v1t{d4ng_u_kn0w_pyth0n_d3bugg}`
 
 ---
+
 
 
