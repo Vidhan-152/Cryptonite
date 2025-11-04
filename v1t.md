@@ -173,4 +173,4 @@
 
 ---
 
-*These writeups document my solutions for the v1t CTF competition. Feel free to reach out for discussions or clarifications!*
+
