@@ -1,119 +1,176 @@
-**LINK TO MY PROFILE :** https://ctf.v1t.site/teams/1170
+# CTF Writeups - v1t CTF
 
-**TYPE:** OSINT
+**Profile:** [https://ctf.v1t.site/teams/1170](https://ctf.v1t.site/teams/1170)
 
-## Among Us at School
+---
 
-**Challenge:** Find the acronym of the school in the image.
+## 🔍 OSINT Challenges
 
+### Among Us at School
 
-**Solution:**
-1. The building shows Vietnamese text: "TRƯỜNG ĐẠI HỌC CÔNG NGHỆ THÔNG TIN"
-2. Translation: "University of Information Technology"
-3. Vietnamese acronym: **UIT** (Đại học Công nghệ Thông tin)
-4. **Flag:** `v1t{UIT}`
+**Objective:** Identify the school acronym from an image containing Vietnamese text.
 
-## WikiLeaks Iraq Equipment List
+**Approach:**
+1. Located Vietnamese text on building: "TRƯỜNG ĐẠI HỌC CÔNG NGHỆ THÔNG TIN"
+2. Translated to English: "University of Information Technology"
+3. Determined Vietnamese acronym: **UIT** (Đại học Công nghệ Thông tin)
 
-**Challenge:** In summer 2007, a massive archive surfaced - a 1,996 page equipment list from Operation Iraqi Freedom. Someone demanded its removal. Find the email address of the official who tried to bury the list.
+<img width="639" height="362" alt="amongus" src="https://github.com/user-attachments/assets/2f7b5054-d451-4be4-aaf0-a29cd873fae4" />
 
-**Solution:**
-1. Searched for WikiLeaks Iraq military equipment leak from 2007
-2. Found reference to "US Military Equipment in Iraq (2007)" - 1,996 pages CSV
-3. Located archived correspondence showing takedown request
-4. Identified sender: **David J. Hoskins**
-5. **Flag:** `v1t{david.j.hoskins@us.army.mil}`
+**Flag:** `v1t{UIT}`
 
-## Wooden Duck Halloween Decoration
+---
 
-**Challenge:** Find website selling wooden duck Halloween decoration.
+### WikiLeaks Iraq Equipment List
 
-**Solution:**
-1. Searched for wooden duck with witch hat
-2. Identified brand: DCUK (Duck Company UK)
-3. **Flag:** `v1t{dcuk.com}`
+**Objective:** Locate the email address of the official who requested removal of a 1,996-page equipment list from Operation Iraqi Freedom that surfaced in summer 2007.
 
-## FSB Location
+**Approach:**
+1. Researched WikiLeaks Iraq military equipment leak (2007)
+2. Found document reference: "US Military Equipment in Iraq (2007)" - 1,996 pages CSV format
+3. Discovered archived correspondence containing takedown request
+4. Identified requesting official: **David J. Hoskins**
 
-**Challenge:** Find location with FSB badges and "playing music" clue. Aerial image shows a compound in Russian forest.
+**Flag:** `v1t{david.j.hoskins@us.army.mil}`
 
-**Solution:**
-1. Identified FSB 100th anniversary badges (2017) from the medal images
-2. Searched for "16 Center" (FSB 16th Center)
-3. Located the badge unit facility at the coordinates
-4. **Flag:** `v1t{55.592169,37.689097}`
+---
 
-**TYPE:** WEB
+### Wooden Duck Halloween Decoration
 
-## Tiny Flag
+**Objective:** Find the website selling a specific wooden duck Halloween decoration.
 
-**Challenge:** Do you see the tiny flag? Link: https://tommytheduck.github.io/tiny_flag
+**Approach:**
+1. Searched for wooden duck with witch hat decoration
+2. Identified manufacturer: DCUK (Duck Company UK)
 
-**Solution:**
-1. Visited the webpage "Tiny Flag" by TommyTheDuck
-2. The flag was hidden in the favicon image
+   <img width="666" height="666" alt="duck_company" src="https://github.com/user-attachments/assets/7a102aa2-1f3f-49fd-aa94-383953eeb336" />
 
-##  Mark The Lyrics
+**Flag:** `v1t{dcuk.com}`
 
-**Challenge:** My friend make a website for his favourite, but the lyrics seem a little bit odd
-http://tommytheduck.github.io/mckey
+---
 
-**Solution:**
-1. Visted the website and saw the given lyrics and comapred it with actaul lyrics of the song and the different lyrics got the flag
+### FSB Location
 
-##  5571
+**Objective:** Determine coordinates of FSB facility using badges and aerial imagery showing a compound in Russian forest, with "playing music" as an additional clue.
 
-**Challenge:** My friend got highest mark with this challenge, can you beat it :>
-http://chall.v1t.site:30300/
+**Approach:**
+1. Analyzed FSB 100th anniversary badges (2017) from medal images
+2. Researched "16 Center" (FSB 16th Center)
+3. Checked the unit number in the pdf
+4. coordinates were given in the pdf
+   
+<img width="624" height="654" alt="place" src="https://github.com/user-attachments/assets/761460f2-72aa-463d-ba43-3661c32dee29" />
 
-**Solution:**
-1. Started checking with normal Javascript commands , got help from cgpt and started using  SSTI (Server-Side Template Injection)
-2. First confirmed SSTI by math evaluation
-3. Found out many keywords are banned
-4. used %7B%7Bconfig%7D%7D to get the config payload and got to know its JINJA
-5. Trying different commands got the flag.txt
+**Flag:** `v1t{55.592169,37.689097}`
 
-##  Stylish Flag
+---
 
-**Challenge:** front end developer
+## 🌐 Web Challenges
 
-**Solution:**
-1. Flag had the hidden class which i removed.
-2. Rotated the flag by 180deg
-3. pushed flag to left = 0.
+### Tiny Flag
 
-##  Login Panel
+**Challenge URL:** [https://tommytheduck.github.io/tiny_flag](https://tommytheduck.github.io/tiny_flag)
 
-**Challenge:** login
+**Objective:** Locate a hidden flag on the webpage.
 
-**Solution:**
-1. Got the username and password from the inspect.
-2. They were in hash so i used https://hashes.com/en/decrypt/hash to get the flag.
+**Approach:**
+1. Inspected page elements and discovered flag embedded in favicon image
 
+**Flag:** Found in favicon
 
-**TYPE:** CRYPTO
+---
 
-## Lost Some binary
+### Mark The Lyrics
 
-**Challenge:** SOS we lost some binary sir! Given a file with binary data.
+**Challenge URL:** [http://tommytheduck.github.io/mckey](http://tommytheduck.github.io/mckey)
 
-**Solution:**
-1. File contains binary data (8-bit groups)
-2. Decoded the ASCII"
-3. Real flag hidden in **LSB (Least Significant Bit)** steganography
-4. Extracted the last bit of each byte, concatenated and decoded to ASCII
-5. **Flag:** `v1t{LSB:>}`
+**Objective:** A friend created a website featuring their favorite song, but the lyrics appear modified.
 
+**Approach:**
+1. Visited website and examined displayed lyrics
+2. Compared with authentic song lyrics
+3. Identified discrepancies between versions
+4. Extracted flag from altered lyrics
 
-**TYPE:** REV
+**Flag:** Obtained from lyric differences
 
-## Extract the flag from the provided obs.py
+---
 
-**Solution:**
-1. Inspected obs.py and found a runtime decoder.
-2. Extracted / ran the decoder in a safe sandbox to recover its output.
-3. Read the recovered output containing the flag.
+### 5571
 
-**Flag**: v1t{d4ng_u_kn0w_pyth0n_d3bugg}
+**Challenge URL:** [http://chall.v1t.site:30300/](http://chall.v1t.site:30300/)
 
+**Objective:** A friend achieved the highest score on this challenge. Can you surpass it?
 
+**Approach:**
+1. Tested standard JavaScript commands initially
+2. Identified potential for SSTI (Server-Side Template Injection)
+3. Confirmed SSTI vulnerability through mathematical expression evaluation
+4. Discovered multiple keyword blacklist restrictions
+5. Used `%7B%7Bconfig%7D%7D` payload to retrieve configuration
+6. Identified template engine as Jinja2
+7. Iterated through various commands to locate and retrieve `flag.txt`
+
+**Flag:** Retrieved from flag.txt file
+
+---
+
+### Stylish Flag
+
+**Objective:** Front-end development challenge with hidden flag.
+
+**Approach:**
+1. Removed `hidden` class from flag element
+2. Applied 180-degree rotation transformation
+3. Adjusted positioning: `left: 0`
+
+**Flag:** Revealed through CSS manipulation
+
+---
+
+### Login Panel
+
+**Objective:** Authenticate to access protected content.
+
+**Approach:**
+1. Extracted username and password from page source via browser inspector
+2. Identified credentials stored as hash values
+3. Utilized [https://hashes.com/en/decrypt/hash](https://hashes.com/en/decrypt/hash) to decrypt hashes
+
+**Flag:** Obtained after successful decryption
+
+---
+
+## 🔐 Cryptography Challenges
+
+### Lost Some Binary
+
+**Objective:** Recover missing binary data from provided file.
+
+**Approach:**
+1. Examined file containing 8-bit binary groups
+2. Initially decoded as ASCII text
+3. Recognized LSB (Least Significant Bit) steganography technique
+4. Extracted final bit from each byte
+5. Concatenated extracted bits and decoded to ASCII
+
+**Flag:** `v1t{LSB:>}`
+
+---
+
+## 🔧 Reverse Engineering Challenges
+
+### Extract Flag from obs.py
+
+**Objective:** Retrieve flag from obfuscated Python script.
+
+**Approach:**
+1. Analyzed `obs.py` and identified runtime decoder mechanism
+2. Executed decoder in isolated sandbox environment
+3. Captured decoded output containing flag
+
+**Flag:** `v1t{d4ng_u_kn0w_pyth0n_d3bugg}`
+
+---
+
+*These writeups document my solutions for the v1t CTF competition. Feel free to reach out for discussions or clarifications!*
