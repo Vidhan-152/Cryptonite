@@ -1,23 +1,113 @@
 # Forensic
 
-## Steps
+Gotham
 
-1. Downloaded the file - `gotham.raw`
-2. Opened Windows PowerShell
-3. Ran the command:
-```powershell
-   Select-String -Path "gotham.raw" -Pattern "bi0sctf"
+When I first received the challenge, the only artifact provided was a memory dump. Before touching tools, I checked the file size and format to understand what I was working with. It appeared to contain complete system memory, so the goal was clear — enumerate processes, locate artifacts, extract data, and assemble flags.
+
+## Volatility2
+
+Volatility is the standard toolkit for memory analysis ,  Volatility2 more suited for deep forensic extraction here.
+
+To proceed, I installed the required Volatility2 dependencies:
 ```
-4. Searched for the word "Flag" in the output
-
-## Screenshot
-
-![image](https://github.com/user-attachments/assets/7dea77d8-ccfc-4c03-b11a-9e63517c3530)
-
-## Flag
+pip2 install pycryptodome
+pip2 install distorm3
+pip2 install yara-python
 ```
-bi0sctf{H4Ha_N0w_Th4t_1s_Th3_Punchl1n3_0f_Th3_J0k3_1snt_1t?_2d9fe9}
+
+Then I loaded the memory file using Volatility2:
+
 ```
+python2 vol.py -f gotham.raw imageinfo
+```
+
+Step 1 – Extracting Terminal History
+
+Command history often reveals flags or hints. So I ran:
+```
+python2 vol.py -f gotham.raw --profile=Win7SP1x64 cmdscan
+```
+
+Among the recovered commands were:
+
+whoami
+dir
+bi0s
+dfirlabs
+Ymkwc2N0Znt3M2xjMG0zXw==
+azr43ln1ght.github.io
+Azr43lKn1ght
+did you find flag1?
+
+
+That Base64-looking string was suspicious:
+```
+echo "Ymkwc2N0Znt3M2xjMG0zXw==" | base64 -d
+```
+
+→ Output revealed FLAG 1
+
+Step 2 – Process Dumping for More Flags
+
+Next, I listed running processes using pstree/plist and identified notepad.exe (PID 2592) as a good target to dump:
+```
+strings -el 2592.dmp | grep -i flag
+```
+
+Two Base64 values popped up:
+
+flag3 = aDBwM190aDE1Xw==
+flag4 = YjNuM2YxNzVfeTB1Xw==
+
+
+Decoded:
+```
+echo "YjNuM2YxNzVfeTB1Xw==" | base64 -d 
+→ b3n3f175_y0u
+```
+```
+echo "aDBwM190aDE1Xw==" | base64 -d
+→ h0p3_th15_
+```
+
+So now we had FLAG 3 & FLAG 4.
+
+Step 3 – The RAR Archive (Flag 5)
+
+Volatility's filescan revealed a RAR file:
+```
+filescan | grep flag5
+```
+
+Dumped the offset → extracted as:
+```
+mv file.None.0xfffffa80049f86a0.dat flag5.rar
+unrar x flag5.rar
+```
+
+The file requested a password — likely the system password. Using hashdump:
+```
+python2 vol.py -f gotham.raw --profile=Win7SP1x64 hashdump
+```
+
+One of the password hashes belonged to user bruce. Cracked using hashcat and the correct password unlocked flag.txt, which contained:
+```
+bTByM18xMzMzNzQzMX0=
+echo "bTByM18xMzMzNzQzMX0=" | base64 -d
+→ m0r3_13337431}
+```
+
+This gave FLAG 5 (final part).
+
+Flag 2
+
+The remaining part was likely embedded in a paint/MS-Paint memory segment. After dumping, the recovered BMP was too blurred and unreadable but after some time and some tools the flag was t0_df1r_l4b5.
+
+Final Reconstructed Flag
+```
+bi0sctf{w3lc0m3_t0_df1r_l4b5_h0p3_th15_b3n3f175_y0u_m0r3_13337431}
+```
+
 # Web Exploitation
 
 Step 1: Initial Exploration
@@ -164,4 +254,4 @@ Book limit preventing flag access
 
 
 Conclusion
-We found nite{test_flag_stp} flag at liteId: 2hdke-6sh3 in the startingData.json file, but this appears to be a test flag for local development. The actual flag would be dynamically set on the real CTF server.
+We found ```nite{test_flag_stp}``` flag at liteId: 2hdke-6sh3 in the startingData.json file, but this appears to be a test flag for local development. The actual flag would be dynamically set on the real CTF server.
