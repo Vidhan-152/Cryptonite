@@ -223,3 +223,208 @@ final flag
 ```
 flag=nite{test_flag_stp}
 ```
+# Cryptography
+
+i could not complete it because solving LWE is taking so much of time.
+
+in the problem we had been given 30 nodes , LWE public parameters (A matrix, b vector, q=1009, n=50, m=100), a server file that checks if our hamiltonian path is correct or not, if the path is correct then server will provide us with LWE error magnitudes by which we have to solve the equation and then s value be sent to server which will provide us the flag.
+
+i connected to the server filtermaze.2025.ctfcompetition.com:1337
+
+then solved pow from the given python file 
+```
+curl -sSL https://goo.gle/kctf-pow | python3 - solve s.AJyu.AAD979QOnEPsWFG/ANyMYWav
+```
+this pow keep changing for every new run so i made a python script for this
+```
+
+def gmpy_sloth_root(x, diff, p):
+    exponent = (p + 1) // 4
+    for _ in range(diff):
+        x = gmpy2.powmod(x, exponent, p).bit_flip(0)
+    return int(x)
+
+def python_sloth_root(x, diff, p):
+    exponent = (p + 1) // 4
+    for _ in range(diff):
+        x = pow(x, exponent, p) ^ 1
+    return x
+
+def sloth_root(x, diff, p):
+    return gmpy_sloth_root(x, diff, p) if HAVE_GMP else python_sloth_root(x, diff, p)
+
+def encode_number(num):
+    size = (num.bit_length() // 24) * 3 + 3
+    return str(base64.b64encode(num.to_bytes(size, 'big')), 'utf-8')
+
+def decode_number(enc):
+    return int.from_bytes(base64.b64decode(bytes(enc, 'utf-8')), 'big')
+
+def decode_challenge(enc):
+    parts = enc.split('.')
+    if parts[0] != VERSION:
+        raise Exception('Unknown challenge version')
+    return list(map(decode_number, parts[1:]))
+
+def encode_challenge(arr):
+    return '.'.join([VERSION] + list(map(encode_number, arr)))
+
+def solve_pow_challenge(chal: str) -> str:
+    diff, x = decode_challenge(chal)
+    print(f"[*] PoW difficulty: {diff}")
+    y = sloth_root(x, diff, MODULUS)
+    return encode_challenge([y])
+```
+by this i entered into the server and i now manually sent the nodes to check the valid_prefix to automate this i made a python script
+
+```
+def discover_path(sock, graph):
+    """Discover secret Hamiltonian path using oracle queries"""
+    nodes = sorted(graph.keys())
+    path = []
+    
+    # Find start node
+    print("[*] Finding start node...")
+    for v in nodes:
+        send_json(sock, {"command": "check_path", "segment": [v]})
+        resp = recv_json_line(sock)
+        if resp.get("status") in ["valid_prefix", "path_complete"]:
+            path = [v]
+            print(f"[+] Start node: {v}")
+            if resp.get("status") == "path_complete":
+                return path, resp.get("lwe_error_magnitudes")
+            break
+    
+    if not path:
+        raise RuntimeError("No start node found")
+    
+    # Extend path
+    print("[*] Extending path...")
+    while len(path) < len(graph):
+        last = path[-1]
+        used = set(path)
+        found = False
+        
+        for neighbor in graph[last]:
+            if neighbor in used:
+                continue
+            
+            candidate = path + [neighbor]
+            send_json(sock, {"command": "check_path", "segment": candidate})
+            resp = recv_json_line(sock)
+            status = resp.get("status")
+            
+            if status == "path_complete":
+                print(f"[+] Path complete! Length: {len(candidate)}")
+                return candidate, resp.get("lwe_error_magnitudes")
+            elif status == "valid_prefix":
+                path.append(neighbor)
+                print(f"[+] Extended to length {len(path)}")
+                found = True
+                break
+        
+        if not found:
+            raise RuntimeError(f"Stuck at {path}")
+    
+    raise RuntimeError("Path not completed")
+```
+
+the final path came 
+```
+[0, 15, 1, 16, 2, 17, 3, 18, 4, 19, 5, 20, 6, 21, 7, 22, 8, 23, 9, 24, 10, 25, 11, 26, 12, 27, 13, 28, 14, 29]
+```
+i sent this path to the server and it gave me error magnitudes
+```
+[265, 622, 38, 716, 722, 308, 996, 799, 742, 337, 927, 698, 626, 969, 330, 126, 321, 20, 271, 839, 175, 399, 752, 989, 666, 629, 271, 400, 311, 840, 821, 821, 17, 978, 488, 781, 74, 818, 849, 903, 776, 142, 505, 951, 582, 638, 222, 872, 427, 165, 307, 209, 475, 970, 748, 814, 69, 213, 27, 742, 744, 566, 262, 852, 740, 309, 997, 502, 995, 434, 405, 193, 257, 953, 924, 678, 232, 226, 560, 414, 584, 579, 767, 810, 51, 894, 446, 281, 761, 908, 715, 787, 722, 270, 94, 169, 474, 431, 292, 346]
+```
+after this i could not do the learn with error. the linear equation was having many solutions. I found a article on google about how to solve this LWE using sparse matrix.
+<img width="1908" height="915" alt="image" src="https://github.com/user-attachments/assets/c278ef28-a230-4bf9-bee4-de38817d6c44" />
+this was no help so i learnt about Z3-solver python library which could help me as it was taking so much of time i left the challenge here
+```
+import json
+from z3 import Int, Bool, If, Solver, sat
+
+with open("lwe_pub_params.json", "r") as f:
+    lwe = json.load(f)
+
+A = lwe["A"]      # 100 x 50
+b = lwe["b"]      # 100
+q = lwe["lwe_q"]  # 1009
+
+m = len(A)
+n = len(A[0])
+
+print(f"A is {m}x{n}, len(b)={len(b)}, q={q}")
+error_mags = [
+    265, 622, 38, 716, 722, 308, 996, 799, 742, 337,
+    927, 698, 626, 969, 330, 126, 321, 20, 271, 839,
+    175, 399, 752, 989, 666, 629, 271, 400, 311, 840,
+    821, 821, 17, 978, 488, 781, 74, 818, 849, 903,
+    776, 142, 505, 951, 582, 638, 222, 872, 427, 165,
+    307, 209, 475, 970, 748, 814, 69, 213, 27, 742,
+    744, 566, 262, 852, 740, 309, 997, 502, 995, 434,
+    405, 193, 257, 953, 924, 678, 232, 226, 560, 414,
+    584, 579, 767, 810, 51, 894, 446, 281, 761, 908,
+    715, 787, 722, 270, 94, 169, 474, 431, 292, 346
+]
+
+assert len(error_mags) == m
+
+s_vars   = [Int(f"s_{j}")   for j in range(n)]  # secret key components
+signs    = [Bool(f"sgn_{i}") for i in range(m)] # True => +mag, False => -mag
+k_vars   = [Int(f"k_{i}")   for i in range(m)]  # wrap-around multipliers (any integer)
+
+solver = Solver()
+
+# s_j in [0, q-1]
+for sj in s_vars:
+    solver.add(sj >= 0, sj < q)
+
+
+#    sum_j A[i][j] * s_j + (± error_mags[i]) - b[i] = q * k_i
+for i in range(m):
+    row = A[i]
+    bi  = b[i]
+    mag = error_mags[i]
+
+    dot = sum(row[j] * s_vars[j] for j in range(n))
+    e_i = If(signs[i], mag, -mag)     # True -> +mag, False -> -mag
+
+    solver.add(dot + e_i - bi == q * k_vars[i])
+
+print("[*] Calling Z3 solver (this can take a while, but WILL finish)...")
+res = solver.check()
+print("[*] Z3 result:", res)
+
+if res != sat:
+    raise RuntimeError("Z3 says problem is not SAT (or unknown) – something's off.")
+
+model = solver.model()
+s_recovered = [model[sj].as_long() for sj in s_vars]
+
+print("\n[+] Recovered secret s (length = {}):".format(len(s_recovered)))
+print(s_recovered)
+
+# Optional: small verification
+def mod_q(x):
+    return x % q
+
+ok = True
+for i in range(m):
+    row = A[i]
+    mag = error_mags[i]
+    dot = sum(row[j] * s_recovered[j] for j in range(n))
+    ei_signed = model[signs[i]]
+    ei = mag if ei_signed is None or ei_signed else -mag
+    lhs = mod_q(dot + ei)
+    rhs = mod_q(b[i])
+    if lhs != rhs:
+        ok = False
+        print(f"Row {i} mismatch: lhs={lhs}, rhs={rhs}")
+        break
+
+print("\nVerification:", "OK" if ok else "FAILED")
+
+print("\nSend this JSON to the server:")
+print({"command": "get_flag", "lwe_secret_s": s_recovered})
+```
